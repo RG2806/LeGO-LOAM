@@ -208,8 +208,55 @@ public:
         segMsg.orientationDiff = segMsg.endOrientation - segMsg.startOrientation;
     }
 
+//    void projectPointCloud(){
+//        // range image projection
+//        float verticalAngle, horizonAngle, range;
+//        size_t rowIdn, columnIdn, index, cloudSize; 
+//        PointType thisPoint;
+
+//        cloudSize = laserCloudIn->points.size();
+
+//        for (size_t i = 0; i < cloudSize; ++i){
+
+//            thisPoint.x = laserCloudIn->points[i].x;
+//            thisPoint.y = laserCloudIn->points[i].y;
+//            thisPoint.z = laserCloudIn->points[i].z;
+//            // find the row and column index in the iamge for this point
+//            if (useCloudRing == true){
+//                rowIdn = laserCloudInRing->points[i].ring;
+//            }
+//            else{
+//                verticalAngle = atan2(thisPoint.z, sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y)) * 180 / M_PI;
+//                rowIdn = (verticalAngle + ang_bottom) / ang_res_y;
+//            }
+//            if (rowIdn < 0 || rowIdn >= N_SCAN)
+//                continue;
+
+//            horizonAngle = atan2(thisPoint.x, thisPoint.y) * 180 / M_PI;
+
+//            columnIdn = -round((horizonAngle-90.0)/ang_res_x) + Horizon_SCAN/2;
+//            if (columnIdn >= Horizon_SCAN)
+//                columnIdn -= Horizon_SCAN;
+
+//            if (columnIdn < 0 || columnIdn >= Horizon_SCAN)
+//                continue;
+
+//            range = sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y + thisPoint.z * thisPoint.z);
+//            if (range < sensorMinimumRange)
+//                continue;
+//            
+//            rangeMat.at<float>(rowIdn, columnIdn) = range;
+
+//            thisPoint.intensity = (float)rowIdn + (float)columnIdn / 10000.0;
+
+//            index = columnIdn  + rowIdn * Horizon_SCAN;
+//            fullCloud->points[index] = thisPoint;
+//            fullInfoCloud->points[index] = thisPoint;
+//            fullInfoCloud->points[index].intensity = range; // the corresponding range of a point is saved as "intensity"
+//        }
+//    }
+
     void projectPointCloud(){
-        // range image projection
         float verticalAngle, horizonAngle, range;
         size_t rowIdn, columnIdn, index, cloudSize; 
         PointType thisPoint;
@@ -221,40 +268,71 @@ public:
             thisPoint.x = laserCloudIn->points[i].x;
             thisPoint.y = laserCloudIn->points[i].y;
             thisPoint.z = laserCloudIn->points[i].z;
-            // find the row and column index in the iamge for this point
-            if (useCloudRing == true){
-                rowIdn = laserCloudInRing->points[i].ring;
-            }
-            else{
-                verticalAngle = atan2(thisPoint.z, sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y)) * 180 / M_PI;
-                rowIdn = (verticalAngle + ang_bottom) / ang_res_y;
-            }
+
+            verticalAngle = atan2(thisPoint.z, sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y)) * 180 / M_PI;
+
+// Hesai Pandar40
+//            if (verticalAngle < -6)
+//                rowIdn = (verticalAngle + 16) / 1.0;
+//            else if (verticalAngle >= -6 && verticalAngle < 2)
+//                rowIdn = (verticalAngle + 6) / 0.33 + 10;
+//            else
+//                rowIdn = (verticalAngle - 2) / 1.0 + 34;
+
+
+// Hesai Pandar64
+
+            // 1 ring - at 25deg; rowIdn = [0]
+            if (verticalAngle < -19)
+                rowIdn = (verticalAngle + 25) / 6.0;
+            // 1 ring - at 19deg; rowIdn = [1]
+            else if (verticalAngle >= -19 && verticalAngle < -14)
+                rowIdn = (verticalAngle + 19) / 5.0 + 1;
+            // 8 ring; rowIdn = [2, 3, 4, 5, 6, 7, 8, 9]
+            else if (verticalAngle >= -14 && verticalAngle < -6)
+                rowIdn = (verticalAngle + 14) / 1.0 + 2;
+            // 48 ring; rowIdn = [10, 11, ...., 57] 
+            else if (verticalAngle >= -6 && verticalAngle < +2)
+                rowIdn = (verticalAngle + 6) / 0.167 + 10;
+	    // 1 ring; rowIdn = [58] 
+            else if (verticalAngle >= 2 && verticalAngle < 3)
+                rowIdn = (verticalAngle - 2) / 1.0 + 58;
+	    // 1 ring; rowidn = [59] 
+            else if (verticalAngle >= 3 && verticalAngle < 5)
+                rowIdn = (verticalAngle - 3) / 2.0 + 59;
+	    // 2 ring; rowIdn = [60, 61] 
+            else if (verticalAngle >= 5 && verticalAngle < 11)
+                rowIdn = (verticalAngle - 5) / 3.0 + 60;
+            // 1 ring; rowIdn = [62, 63]
+	    else
+		rowIdn = (verticalAngle - 11) / 4.0 + 62;
+		
+
+
             if (rowIdn < 0 || rowIdn >= N_SCAN)
                 continue;
 
             horizonAngle = atan2(thisPoint.x, thisPoint.y) * 180 / M_PI;
 
-            columnIdn = -round((horizonAngle-90.0)/ang_res_x) + Horizon_SCAN/2;
-            if (columnIdn >= Horizon_SCAN)
-                columnIdn -= Horizon_SCAN;
-
-            if (columnIdn < 0 || columnIdn >= Horizon_SCAN)
-                continue;
+            if (horizonAngle <= -90)
+                columnIdn = -int(horizonAngle / ang_res_x) - 450; 
+            else if (horizonAngle >= 0)
+                columnIdn = -int(horizonAngle / ang_res_x) + 1350;
+            else
+                columnIdn = 1350 - int(horizonAngle / ang_res_x);
 
             range = sqrt(thisPoint.x * thisPoint.x + thisPoint.y * thisPoint.y + thisPoint.z * thisPoint.z);
-            if (range < sensorMinimumRange)
-                continue;
-            
             rangeMat.at<float>(rowIdn, columnIdn) = range;
 
             thisPoint.intensity = (float)rowIdn + (float)columnIdn / 10000.0;
 
             index = columnIdn  + rowIdn * Horizon_SCAN;
             fullCloud->points[index] = thisPoint;
-            fullInfoCloud->points[index] = thisPoint;
-            fullInfoCloud->points[index].intensity = range; // the corresponding range of a point is saved as "intensity"
+
+            fullInfoCloud->points[index].intensity = range;
         }
     }
+
 
 
     void groundRemoval(){

@@ -1,0 +1,26 @@
+Changes from original LegoLoam
+
+0. Added a script pcds_to_pointcloud.py to publish velodyne_points topic from a set of pcd file. A rosbag file can be recorded using "rosbag record /velodyne_points" before running the script.
+
+1. Velodyne and Hesai have different output of pointcloud. While Velodyne gives PointXYZIR, Hesai's pandar gives only PointXYZI. The function projectPointCloud earlier used ring channel to directly get vertical angle but since its missing in hesai output, we added a change to compute this angle based on point trignometry. 
+
+2. Utility.h was changed to add configuration for hesai Pandar64 LiDAR specifications. Heavily used datasheet measures to set it up.
+
+3. Global frame in rviz is set from map to camera_init now. Rviz won't show map building with map as global frame, but camera_init just got working
+
+ 
+Quick commands:
+
+Produce rosbag file from given set of pcd files using pcds_to_pointcloud.py script:
+(modify directory path)
+python pcds_to_pointcloud.py
+
+Launch slam framework using:
+roslaunch lego_loam run.launch
+
+Play rosbag file:
+rosbag play ******.bag --clock --topics /velodyne_points
+
+If the rosbag recorded is slow, play it at faster rate: (10 times)
+rosbag play ******.bag --clock --topics /velodyne_points -r 10
+

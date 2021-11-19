@@ -60,12 +60,29 @@ extern const string fileDirectory = "/tmp/";
 extern const bool useCloudRing = true; // if true, ang_res_y and ang_bottom are not used
 
 // VLP-16
-extern const int N_SCAN = 16;
+//extern const int N_SCAN = 16;
+//extern const int Horizon_SCAN = 1800;
+//extern const float ang_res_x = 0.2;
+//extern const float ang_res_y = 2.0;
+//extern const float ang_bottom = 15.0+0.1;
+//extern const int groundScanInd = 7;
+
+
+// Hesai pandar64
+extern const int N_SCAN = 64;
 extern const int Horizon_SCAN = 1800;
 extern const float ang_res_x = 0.2;
-extern const float ang_res_y = 2.0;
-extern const float ang_bottom = 15.0+0.1;
-extern const int groundScanInd = 7;
+extern const float ang_res_y = 0.167;
+extern const float ang_bottom = 25.0;
+extern const int groundScanInd = 40; // -1deg to -25deg
+
+// Hesai Pandar40
+/*extern const int N_SCAN = 40;*/
+/*extern const int Horizon_SCAN = 1800;*/
+/*extern const float ang_res_x = 0.2;*/
+/*extern const float ang_res_y = 0.33;*/
+/*extern const float ang_bottom = 16;*/
+/*extern const int groundScanInd = 25;*/
 
 // HDL-32E
 // extern const int N_SCAN = 32;
