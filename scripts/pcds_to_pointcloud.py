@@ -8,7 +8,7 @@ from sensor_msgs.msg import PointCloud2
 import numpy as np
 import pypcd
 
-pcd_data_dir = "/home/asimo/rnd/data/jlr_pcd_data/pcd"
+pcd_data_dir = "/home/asimo/rnd/data/jlr_pcd_data/pcd2"
 
 def talker():
     pcd_files = sorted(os.listdir(pcd_data_dir))
